@@ -26,11 +26,12 @@ class ApiUserSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         user = ApiUser.objects.create(
-            self_description=validated_data['self_description'],
-            username=validated_data['username'],
+            self_description=validated_data.get('self_description'),
+            username=validated_data.get('username'),
         )
 
         user.set_password(validated_data['password'])
+        user.is_active = True
         user.save(update_fields=['password'])
         return user
 
@@ -68,6 +69,22 @@ class ScenarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scenario
         fields = '__all__'
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
+        steps_data = validated_data('steps', None)
+        if steps_data:
+            instance.steps.all().delete()
+            author = self.context['request'].user
+            for step_data in steps_data:
+                Step.objects.create(
+                    author=author,
+                    scenario=instance,
+                    **step_data
+                )
+        instance.save()
+        return instance
     
     def create(self, validated_data):
         steps_data = validated_data.pop('steps', None)

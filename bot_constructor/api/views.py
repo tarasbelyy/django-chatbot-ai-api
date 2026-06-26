@@ -23,12 +23,20 @@ class IsAuthorOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return obj.author == request.user
+    
+
+class IsUserOrReadOnly(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj == request.user  
 
 
 class ApiUserModelViewSet(viewsets.ModelViewSet):
     queryset = ApiUser.objects.all()
     serializer_class = ApiUserSerializer
-    permission_classes = []
+    permission_classes = [IsUserOrReadOnly]
 
 
 class ChatBotModelViewSet(viewsets.ModelViewSet):

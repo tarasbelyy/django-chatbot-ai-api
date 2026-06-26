@@ -4,6 +4,7 @@ from .models import ApiUser, ChatBot, Scenario, Step
 
 
 class ApiUserSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     username = serializers.SlugField(max_length=128, validators=[
         validators.UniqueValidator(ApiUser.objects.all())
     ])
@@ -15,7 +16,7 @@ class ApiUserSerializer(serializers.Serializer):
     self_description = serializers.CharField(required=False)
 
     def update(self, instance, validated_data):
-        if self_description := validated_data.get('self_description'):
+        if self_description := validated_data.get('self_description', ''):
             instance.self_description = self_description
             instance.save(update_fields=['self_description'])
 
@@ -26,7 +27,7 @@ class ApiUserSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         user = ApiUser.objects.create(
-            self_description=validated_data.get('self_description'),
+            self_description=validated_data.get('self_description',''),
             username=validated_data.get('username'),
         )
 
@@ -73,7 +74,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
-        steps_data = validated_data('steps', None)
+        steps_data = validated_data.get('steps', None)
         if steps_data:
             instance.steps.all().delete()
             author = self.context['request'].user

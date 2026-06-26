@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.views import APIView
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import (
     BasePermission,
@@ -7,7 +9,7 @@ from rest_framework.permissions import (
     SAFE_METHODS
 )
 
-
+from .bots import run_bots
 from .models import ApiUser, ChatBot, Scenario
 from .serializers import (
     ApiUserSerializer,
@@ -33,13 +35,13 @@ class IsUserOrReadOnly(BasePermission):
         return obj == request.user  
 
 
-class ApiUserModelViewSet(viewsets.ModelViewSet):
+class ApiUserModelViewSet(ModelViewSet):
     queryset = ApiUser.objects.all()
     serializer_class = ApiUserSerializer
     permission_classes = [IsUserOrReadOnly]
 
 
-class ChatBotModelViewSet(viewsets.ModelViewSet):
+class ChatBotModelViewSet(ModelViewSet):
     queryset = ChatBot.objects.all()
     serializer_class = ChatBotSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
@@ -48,13 +50,13 @@ class ChatBotModelViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
 
-class ScenarioModelViewSet(viewsets.ModelViewSet):
+class ScenarioModelViewSet(ModelViewSet):
     queryset = Scenario.objects.all()
     serializer_class = ScenarioSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
 
 
-class StepModelViewSet(viewsets.ModelViewSet):
+class StepModelViewSet(ModelViewSet):
     serializer_class = StepSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
 
@@ -73,3 +75,12 @@ class StepModelViewSet(viewsets.ModelViewSet):
         if scenario.author != self.request.user:
             raise PermissionDenied
         serializer.save(author=self.request.user, scenario=scenario)
+
+
+class BotRunView(APIView):
+    def get(self, request):
+        return Response()
+    
+    def post(self, request):
+        return Response()
+    

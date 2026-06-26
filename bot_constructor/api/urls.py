@@ -1,3 +1,4 @@
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from . import views
@@ -14,7 +15,7 @@ router.register(
 
 
 urlpatterns = [
-
+    path(r'bots/(?P<bot_id>\d+)/run', views.BotRunView.as_view())
 ]
 
 urlpatterns.extend(router.urls)

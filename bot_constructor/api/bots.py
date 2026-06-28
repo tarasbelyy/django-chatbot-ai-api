@@ -13,6 +13,43 @@ class BotNotExistsError(Exception):
     pass
 
 
+def has_all_paths(steps):
+    start = steps.get('start')
+    reachable_steps_names = {'start'}
+    stack_ = [start]
+    while stack_:
+        current_step = stack_.pop()
+        for _, next_step_name in current_step.get('transitions').items():
+            if next_step_name not in reachable_steps_names:
+                reachable_steps_names.add(next_step_name)
+                stack_.append(steps.get(next_step_name))
+    if 'exit' not in reachable_steps_names:
+        return False
+    reachable_steps_names.remove('start')
+    reachable_steps_names.remove('exit')
+    verified_steps_names = {'start'}
+    for intermediate_step_name in reachable_steps_names:
+        visited_steps_names = {intermediate_step_name}
+        intermediate_step = steps.get(intermediate_step_name)
+        stack_ = [intermediate_step]
+        found = False
+        while stack_ and not found:
+            current_step = stack_.pop()
+            for _, next_step_name in (current_step
+                                      .get('transitions').items()):
+                if (next_step_name == 'exit' or
+                        next_step_name in verified_steps_names):
+                    found = True
+                    break
+                if next_step_name not in visited_steps_names:
+                    visited_steps_names.add(next_step_name)
+                    stack_.append(steps.get(next_step_name))
+        if not found:
+            return False
+        verified_steps_names.add(intermediate_step_name)
+    return True
+
+
 class SimpleBot:
     def __init__(self, user, chat_bot):
         self.user = user
@@ -25,10 +62,12 @@ class SimpleBot:
             } for step in self.scenario.steps.all()
         }
         self.step = None
-    
+
     def is_runnable(self):
-        return True
-    
+        if 'start' not in self.steps or 'exit' not in self.steps:
+            return False
+        return has_all_paths(self.steps)
+
     def start(self):
         self.step = self.steps.get('start')
         response = {
@@ -36,7 +75,7 @@ class SimpleBot:
             'next': self.step.get('transitions').keys()
         }
         return response
-    
+
     def get_response(self, move, detail=None):
         next_step_name = self.step.get('transitions').get(move)
         if next_step_name is None:

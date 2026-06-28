@@ -102,7 +102,7 @@ class BotRunView(APIView):
         try:
             data = bots.run_bots(request.user, chat_bot, move, detail)
         except bots.BotNotExistsError:
-            raise NotFound('Active chat not found')
+            raise NotFound('Active chatbot not found')
         except bots.MoveNotValidError as e:
             raise ValidationError(f'Incorrect move. {e}')
         return Response(data, status=status.HTTP_200_OK)

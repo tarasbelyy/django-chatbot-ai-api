@@ -65,7 +65,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
         slug_field='username',
         read_only=True
     )
-    steps = StepSerializer(many=True, required=False)
+    steps = StepSerializer(many=True, required=False, write_only=True)
 
     class Meta:
         model = Scenario
@@ -73,7 +73,10 @@ class ScenarioSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
-        instance.description = validated_data.get('description', instance.description)
+        instance.description = validated_data.get(
+            'description',
+            instance.description
+        )
         steps_data = validated_data.get('steps', None)
         if steps_data:
             instance.steps.all().delete()

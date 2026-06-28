@@ -15,7 +15,7 @@ router.register(
 
 
 urlpatterns = [
-    path(r'bots/(?P<bot_id>\d+)/run', views.BotRunView.as_view())
+    path(r'bots/<int:bot_id>/run/', views.BotRunView.as_view())
 ]
 
 urlpatterns.extend(router.urls)

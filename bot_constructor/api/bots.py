@@ -1,8 +1,20 @@
 bots = dict()
 
 
+class MoveNotValidError(Exception):
+    pass
+
+
+class BotNotRunnableError(Exception):
+    pass
+
+
+class BotNotExistsError(Exception):
+    pass
+
+
 class SimpleBot:
-    def __init__(self, chat_bot, user):
+    def __init__(self, user, chat_bot):
         self.user = user
         self.chat_bot = chat_bot
         self.scenario = chat_bot.scenario
@@ -18,35 +30,46 @@ class SimpleBot:
         return True
     
     def start(self):
-        self.step = 'start'
-        step = self.steps.get('start')
-        responce = ...
-        return responce
+        self.step = self.steps.get('start')
+        response = {
+            'message': self.step.get('message'),
+            'next': self.step.get('transitions').keys()
+        }
+        return response
     
     def get_response(self, move, detail=None):
-        next_step_name = self.step.transitions.get(move)
+        next_step_name = self.step.get('transitions').get(move)
         if next_step_name is None:
-            return ...
+            raise MoveNotValidError(
+                f'Options: {list(self.step.get('transitions').keys())}'
+            )
         self.step = self.steps.get(next_step_name)
-        if self.step.name == 'exit':
-            ...
-        responce = ...
-        return responce
-    
+        if next_step_name == 'exit':
+            response = {
+                'message': self.step.get('message'),
+                'next': 'exit'
+            }
+            return response
+        response = {
+            'message': self.step.get('message'),
+            'next': self.step.get('transitions').keys()
+        }
+        return response
 
-def run_bots(chat_bot, user, move, detail=None):
+
+def run_bots(user, chat_bot, move, detail=None):
     if move == 'start':
-        bot = SimpleBot(chat_bot, user)
+        bot = SimpleBot(user, chat_bot)
         if not bot.is_runnable():
-            return ...
-        bots[(chat_bot, user)] = bot
+            raise BotNotRunnableError
+        bots[(user, chat_bot)] = bot
         response = bot.start()
         return response
     else:
-        bot = bots.get((chat_bot, user))
+        bot = bots.get((user, chat_bot))
         if bot is None:
-            return ...
+            raise BotNotExistsError
         response = bot.get_response(move, detail)
-        if response.get('transitions') == 'exit':
-            del bots[(chat_bot, user)]
+        if response.get('next') == 'exit':
+            bots.pop((user, chat_bot))
         return response

@@ -2,14 +2,19 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import (
+    ValidationError,
+    PermissionDenied,
+    NotFound
+)
 from rest_framework.permissions import (
     BasePermission,
     IsAuthenticatedOrReadOnly,
     SAFE_METHODS
 )
+from rest_framework import status
 
-from .bots import run_bots
+from . import bots
 from .models import ApiUser, ChatBot, Scenario
 from .serializers import (
     ApiUserSerializer,
@@ -78,9 +83,26 @@ class StepModelViewSet(ModelViewSet):
 
 
 class BotRunView(APIView):
-    def get(self, request):
-        return Response()
-    
-    def post(self, request):
-        return Response()
-    
+    def get(self, request, bot_id):
+        if not request.user.is_authenticated:
+            raise PermissionDenied
+        chat_bot = get_object_or_404(ChatBot, pk=bot_id)
+        try:
+            data = bots.run_bots(request.user, chat_bot, 'start')
+        except bots.BotNotRunnableError:
+            raise ValidationError('Bot is not runnable')
+        return Response(data, status=status.HTTP_200_OK)
+
+    def post(self, request, bot_id):
+        chat_bot = get_object_or_404(ChatBot, pk=bot_id)
+        move = request.data.get('next')
+        if move is None:
+            raise ValidationError('Field "next" is required')
+        detail = request.data.get('message')
+        try:
+            data = bots.run_bots(request.user, chat_bot, move, detail)
+        except bots.BotNotExistsError:
+            raise NotFound('Active chat not found')
+        except bots.MoveNotValidError as e:
+            raise ValidationError(f'Incorrect move. {e}')
+        return Response(data, status=status.HTTP_200_OK)

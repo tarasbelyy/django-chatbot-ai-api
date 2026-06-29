@@ -89,7 +89,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
                 )
         instance.save()
         return instance
-    
+
     def create(self, validated_data):
         steps_data = validated_data.pop('steps', None)
         author = self.context['request'].user

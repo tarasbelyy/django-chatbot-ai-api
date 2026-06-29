@@ -9,7 +9,6 @@ from rest_framework.exceptions import (
 )
 from rest_framework.permissions import (
     BasePermission,
-    IsAuthenticatedOrReadOnly,
     SAFE_METHODS
 )
 from rest_framework import status
@@ -26,30 +25,49 @@ from .serializers import (
 
 class IsAuthorOrReadOnly(BasePermission):
 
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        return request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
         return obj.author == request.user
 
 
-class IsUserOrReadOnly(BasePermission):
+class IsUserOrRegisterRead(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True
-        return obj == request.user  
+        return obj == request.user
+
+
+class IsScenarioAuthorOrReadOnly(BasePermission):
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        if not request.user.is_authenticated:
+            return False
+        scenario = get_object_or_404(
+            Scenario,
+            pk=view.kwargs.get('scenario_id')
+        )
+        return scenario.author == request.user
 
 
 class ApiUserModelViewSet(ModelViewSet):
     queryset = ApiUser.objects.all()
     serializer_class = ApiUserSerializer
-    permission_classes = [IsUserOrReadOnly]
+    permission_classes = (IsUserOrRegisterRead,)
 
 
 class ChatBotModelViewSet(ModelViewSet):
     queryset = ChatBot.objects.all()
     serializer_class = ChatBotSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -58,12 +76,12 @@ class ChatBotModelViewSet(ModelViewSet):
 class ScenarioModelViewSet(ModelViewSet):
     queryset = Scenario.objects.all()
     serializer_class = ScenarioSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
+    permission_classes = (IsAuthorOrReadOnly,)
 
 
 class StepModelViewSet(ModelViewSet):
     serializer_class = StepSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly)
+    permission_classes = (IsScenarioAuthorOrReadOnly,)
 
     def get_queryset(self):
         scenario = get_object_or_404(
@@ -77,8 +95,6 @@ class StepModelViewSet(ModelViewSet):
             Scenario,
             pk=self.kwargs.get('scenario_id')
         )
-        if scenario.author != self.request.user:
-            raise PermissionDenied
         serializer.save(author=self.request.user, scenario=scenario)
 
 

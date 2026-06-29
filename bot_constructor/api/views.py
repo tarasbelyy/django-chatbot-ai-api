@@ -30,7 +30,7 @@ class IsAuthorOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return obj.author == request.user
-    
+
 
 class IsUserOrReadOnly(BasePermission):
 
@@ -71,7 +71,7 @@ class StepModelViewSet(ModelViewSet):
             pk=self.kwargs.get('scenario_id')
         )
         return scenario.steps.all()
-    
+
     def perform_create(self, serializer):
         scenario = get_object_or_404(
             Scenario,

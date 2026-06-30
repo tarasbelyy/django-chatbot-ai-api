@@ -22,7 +22,7 @@ class BotNotExistsError(Exception):
 
 def get_ai_response(bot_description, step_details, user_content):
     ai_response = client.chat.completions.create(
-        model='openai/gpt-4.1-nano',
+        model='openai/gpt-5.4-nano',
         messages=[
             {
                 'role': 'system',
@@ -33,7 +33,10 @@ def get_ai_response(bot_description, step_details, user_content):
                 'content': user_content
             }
         ],
-        max_tokens=50
+        max_completion_tokens=100,
+        reasoning_effort='minimal',
+        temperature=1.0,
+        verbosity='low'
     )
     return ai_response.choices[0].message.content
 
@@ -156,7 +159,7 @@ def test_openai():
             {'role': 'system', 'content': 'Nice assistant. Say hay'},
             {'role': 'user', 'content': 'I am Taras Belyy'}
         ],
-        max_tokens=50
+        max_tokens=100
     )
     print(ai_response.choices[0].message.content)
 

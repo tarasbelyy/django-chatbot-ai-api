@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
@@ -99,6 +100,9 @@ class StepModelViewSet(ModelViewSet):
 
 
 class BotRunView(APIView):
+    throttle_classes = (ScopedRateThrottle,)
+    throttle_scope = 'ai_endpoint'
+
     def get(self, request, bot_id):
         if not request.user.is_authenticated:
             raise PermissionDenied

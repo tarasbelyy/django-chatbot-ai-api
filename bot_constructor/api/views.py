@@ -114,9 +114,9 @@ class BotRunView(APIView):
         move = request.data.get('next')
         if move is None:
             raise ValidationError('Field "next" is required')
-        detail = request.data.get('message')
+        user_content = request.data.get('message')
         try:
-            data = bots.run_bots(request.user, chat_bot, move, detail)
+            data = bots.run_bots(request.user, chat_bot, move, user_content)
         except bots.BotNotExistsError:
             raise NotFound('Active chatbot not found')
         except bots.MoveNotValidError as e:

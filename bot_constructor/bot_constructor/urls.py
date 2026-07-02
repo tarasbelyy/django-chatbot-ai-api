@@ -9,3 +9,5 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api-token-auth/', obtain_auth_token)
 ]
+
+handler500 = 'api.views.custom_500_error_view'

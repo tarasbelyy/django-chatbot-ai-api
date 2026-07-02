@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -126,3 +127,9 @@ class BotRunView(APIView):
         except bots.MoveNotValidError as e:
             raise ValidationError(f'Incorrect move. {e}')
         return Response(data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
+def custom_500_error_view(request):
+    message = {'detail': 'Internal server error'}
+    return Response(message, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

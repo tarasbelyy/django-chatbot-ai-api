@@ -26,17 +26,15 @@ def get_ai_response(bot_description, step_details, user_content):
         messages=[
             {
                 'role': 'system',
-                'content': '. '.join([bot_description, step_details])
+                'content': bot_description
             },
             {
                 'role': 'user',
-                'content': user_content
+                'content': '. '.join([step_details, user_content])
             }
         ],
-        max_completion_tokens=100,
-        reasoning_effort='minimal',
-        temperature=1.0,
-        verbosity='low'
+        max_completion_tokens=250,
+        temperature=1.0
     )
     return ai_response.choices[0].message.content
 
@@ -101,7 +99,7 @@ class SimpleAIBot:
         ai_response = get_ai_response(
             self.chat_bot.description,
             self.step.get('message'),
-            'I am ' + self.user.username
+            'Я ' + self.user.username
         )
         response = {
             'message': ai_response,
@@ -156,8 +154,8 @@ def test_openai():
     ai_response = client.chat.completions.create(
         model='openai/gpt-4.1-nano',
         messages=[
-            {'role': 'system', 'content': 'Nice assistant. Say hay'},
-            {'role': 'user', 'content': 'I am Taras Belyy'}
+            {'role': 'system', 'content': 'Nice assistant'},
+            {'role': 'user', 'content': 'Say hay. I am Taras Belyy'}
         ],
         max_tokens=100
     )

@@ -27,7 +27,7 @@ class ApiUserSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         user = ApiUser.objects.create(
-            self_description=validated_data.get('self_description',''),
+            self_description=validated_data.get('self_description', ''),
             username=validated_data.get('username'),
         )
 

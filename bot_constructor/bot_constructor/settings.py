@@ -67,10 +67,10 @@ WSGI_APPLICATION = 'bot_constructor.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'chat_bots',
+        'NAME': 'django_app',
         'USER': 'postgres',
-        'PASSWORD': '1234',
-        'HOST': 'localhost',
+        'PASSWORD': 'postgres',
+        'HOST': 'app-postgres',
         'PORT': '5432',
     }
 }

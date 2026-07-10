@@ -1,8 +1,8 @@
-FROM python3.12-alpine
+FROM python:3.12-alpine
 
 WORKDIR /app
 
-COPY ./app .
+COPY ./bot_constructor .
 COPY ./requirements.txt .
 COPY ./run.sh .
 

@@ -2,15 +2,17 @@ version: "3.5"
 services:
   app:
     image: django_app
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     build:
       context: .
     ports:
       - "8000:8000"
     depends_on:
-      app_postgres:
+      app-postgres:
         condition: service_healthy
 
-  app_postgres:
+  app-postgres:
     image: postgres:15-alpine
     volumes:
       - "app-postgres:/var/lib/postgresql/data"

@@ -6,8 +6,12 @@ COPY ./bot_constructor .
 COPY ./requirements.txt .
 COPY ./run.sh .
 
+RUN pip install --upgrade pip
+
 RUN pip install -r requirements.txt
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["sh", "run.sh"]
+RUN chmod +x ./run.sh
+
+CMD ["./run.sh"]

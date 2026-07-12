@@ -6,6 +6,8 @@ services:
     build:
       context: .
       network: host
+    volumes:
+      - static-volume:/app/static
     ports:
       - "8000:8000"
     depends_on:
@@ -17,6 +19,8 @@ services:
     image: postgres:15-alpine
     volumes:
       - app-postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     env_file:
       - .env
     healthcheck:
@@ -26,10 +30,24 @@ services:
       retries: 10
     networks:
       - backend
+  app-nginx:
+      image: nginx:alpine
+      ports:
+        - "80:80"
+      volumes:
+        - ./nginx/conf.d:/etc/nginx/conf.d:ro
+        - static-volume:/app/static
+      depends_on:
+        - app
+      networks:
+        - backend
+      restart: always
 
 volumes:
   app-postgres:
     name: app-postgres
+  static-volume:
+    name: static-volume
 
 networks:
   backend:

@@ -5,6 +5,7 @@ WORKDIR /app
 COPY ./bot_constructor .
 COPY ./requirements.txt .
 COPY ./run.sh .
+COPY ./nginx /etc
 
 RUN pip install --upgrade pip
 

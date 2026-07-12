@@ -28,6 +28,8 @@ djangorestframework==3.17.1
     # via -r requirements.in
 dotenv==0.9.9
     # via -r requirements.in
+gunicorn==26.0.0
+    # via -r requirements.in
 h11==0.16.0
     # via httpcore
 httpcore==1.0.9
@@ -42,6 +44,8 @@ jiter==0.16.0
     # via openai
 openai==2.44.0
     # via -r requirements.in
+packaging==26.2
+    # via gunicorn
 psycopg2-binary==2.9.12
     # via -r requirements.in
 pydantic==2.13.4

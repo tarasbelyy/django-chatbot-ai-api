@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/TarasBelyy/django-chatbot-AI-api:latest
+    image: ghcr.io/tarasbelyy/django-chatbot-ai-api:latest
     env_file:
       - .env
     volumes:

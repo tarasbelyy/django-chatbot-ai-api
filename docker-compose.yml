@@ -1,11 +1,8 @@
 services:
   app:
-    image: django_app
+    image: ghcr.io/TarasBelyy/django-chatbot-AI-api:latest
     env_file:
       - .env
-    build:
-      context: .
-      network: host
     volumes:
       - static-volume:/app/static
     ports:

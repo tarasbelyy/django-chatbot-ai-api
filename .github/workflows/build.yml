@@ -34,7 +34,7 @@ jobs:
           script: |
             echo "${{ secrets.VPS_GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ghcr.io/${{ github.repository }}:latest
-            cd /home/taras-vps/django
+            cd ~/django
             docker compose down && docker compose up -d
             docker logout ghcr.io
       - name: Logout from GitHub Container Registry

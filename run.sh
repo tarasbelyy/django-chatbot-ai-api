@@ -10,5 +10,3 @@ DJANGO_SUPERUSER_USERNAME="admin" \
   python manage.py createsuperuser --noinput
 
 gunicorn bot_constructor.wsgi:application --bind 0.0.0.0:8000
-
-python manage.py runserver --noreload 0.0.0.0:8000

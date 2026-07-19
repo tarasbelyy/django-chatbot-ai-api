@@ -33,7 +33,7 @@ def get_ai_response(bot_description, step_details, user_content):
                 'content': '. '.join([step_details, user_content])
             }
         ],
-        max_completion_tokens=250,
+        max_completion_tokens=500,
         temperature=1.0
     )
     return ai_response.choices[0].message.content
@@ -99,7 +99,7 @@ class SimpleAIBot:
         ai_response = get_ai_response(
             self.chat_bot.description,
             self.step.get('message'),
-            'Я ' + self.user.username
+            'Меня зовут ' + self.user.username
         )
         response = {
             'message': ai_response,

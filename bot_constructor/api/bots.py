@@ -99,7 +99,7 @@ class SimpleAIBot:
         ai_response = get_ai_response(
             self.chat_bot.description,
             self.step.get('message'),
-            'Меня зовут ' + self.user.username
+            'Привет'
         )
         response = {
             'message': ai_response,

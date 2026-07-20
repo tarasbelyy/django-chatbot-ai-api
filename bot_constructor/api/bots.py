@@ -33,7 +33,7 @@ def get_ai_response(bot_description, step_details, user_content):
                 'content': '. '.join([step_details, user_content])
             }
         ],
-        max_completion_tokens=500,
+        max_completion_tokens=1000,
         temperature=1.0
     )
     return ai_response.choices[0].message.content

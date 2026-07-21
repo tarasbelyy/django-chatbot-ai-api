@@ -29,7 +29,7 @@ def get_ai_response(bot_description, step_details, previous, user_content):
     ai_response = client.chat.completions.create(
         model='openai/gpt-5.4-nano',
         messages=messages_payload,
-        max_completion_tokens=1000,
+        max_completion_tokens=5000,
         temperature=1.0
     )
     return ai_response.choices[0].message.content

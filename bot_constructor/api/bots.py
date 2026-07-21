@@ -20,19 +20,15 @@ class BotNotExistsError(Exception):
     pass
 
 
-def get_ai_response(bot_description, step_details, user_content):
+def get_ai_response(bot_description, step_details, previous, user_content):
+    messages_payload = [
+        {'role': 'system', 'content': bot_description}
+    ] + previous + [
+        {'role': 'user', 'content': '. '.join([step_details, user_content])}
+    ]
     ai_response = client.chat.completions.create(
         model='openai/gpt-5.4-nano',
-        messages=[
-            {
-                'role': 'system',
-                'content': bot_description
-            },
-            {
-                'role': 'user',
-                'content': '. '.join([step_details, user_content])
-            }
-        ],
+        messages=messages_payload,
         max_completion_tokens=1000,
         temperature=1.0
     )
@@ -88,6 +84,7 @@ class SimpleAIBot:
             } for step in self.scenario.steps.all()
         }
         self.step = None
+        self.previous = []
 
     def is_runnable(self):
         if 'start' not in self.steps or 'exit' not in self.steps:
@@ -99,6 +96,7 @@ class SimpleAIBot:
         ai_response = get_ai_response(
             self.chat_bot.description,
             self.step.get('message'),
+            self.previous,
             'Привет'
         )
         response = {
@@ -117,6 +115,7 @@ class SimpleAIBot:
         ai_response = get_ai_response(
             self.chat_bot.description,
             self.step.get('message'),
+            self.previous,
             user_content
         )
         if next_step_name == 'exit':
@@ -129,6 +128,10 @@ class SimpleAIBot:
             'message': f'{self.chat_bot.name}:\n{ai_response}',
             'next': self.step.get('transitions').keys()
         }
+        self.previous.pop()
+        self.previous.pop()
+        self.previous.append({'role': 'user', 'content': user_content})
+        self.previous.append({'role': 'assistant', 'content': ai_response})
         return response
 
 

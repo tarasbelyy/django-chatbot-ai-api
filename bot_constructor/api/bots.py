@@ -102,7 +102,7 @@ class SimpleAIBot:
             'Привет'
         )
         response = {
-            'message': ai_response,
+            'message': f'{self.chat_bot.name}:\n{ai_response}',
             'next': self.step.get('transitions').keys()
         }
         return response
@@ -121,12 +121,12 @@ class SimpleAIBot:
         )
         if next_step_name == 'exit':
             response = {
-                'message': ai_response,
+                'message': f'{self.chat_bot.name}:\n{ai_response}',
                 'next': '-'
             }
             return response
         response = {
-            'message': ai_response,
+            'message': f'{self.chat_bot.name}:\n{ai_response}',
             'next': self.step.get('transitions').keys()
         }
         return response

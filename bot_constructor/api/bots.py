@@ -128,8 +128,9 @@ class SimpleAIBot:
             'message': f'{self.chat_bot.name}:\n{ai_response}',
             'next': self.step.get('transitions').keys()
         }
-        self.previous.pop()
-        self.previous.pop()
+        if len(self.previous) > 1:
+            self.previous.pop()
+            self.previous.pop()
         self.previous.append({'role': 'user', 'content': user_content})
         self.previous.append({'role': 'assistant', 'content': ai_response})
         return response

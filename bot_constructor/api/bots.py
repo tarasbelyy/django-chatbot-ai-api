@@ -29,7 +29,7 @@ def get_ai_response(bot_description, step_details, previous, user_content):
     ai_response = client.chat.completions.create(
         model='openai/gpt-5.4-nano',
         messages=messages_payload,
-        max_completion_tokens=5000,
+        max_completion_tokens=2000,
         temperature=1.0
     )
     return ai_response.choices[0].message.content
@@ -100,7 +100,7 @@ class SimpleAIBot:
             'Привет'
         )
         response = {
-            'message': f'{self.chat_bot.name}:\n{ai_response}',
+            'message': ai_response,
             'next': self.step.get('transitions').keys()
         }
         return response
@@ -120,12 +120,12 @@ class SimpleAIBot:
         )
         if next_step_name == 'exit':
             response = {
-                'message': f'{self.chat_bot.name}:\n{ai_response}',
+                'message': ai_response,
                 'next': '-'
             }
             return response
         response = {
-            'message': f'{self.chat_bot.name}:\n{ai_response}',
+            'message': ai_response,
             'next': self.step.get('transitions').keys()
         }
         if len(self.previous) > 1:

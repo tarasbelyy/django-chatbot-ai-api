@@ -1,3 +1,5 @@
+from collections import deque
+
 from openai import OpenAI
 
 
@@ -23,7 +25,7 @@ class BotNotExistsError(Exception):
 def get_ai_response(bot_description, step_details, previous, user_content):
     messages_payload = [
         {'role': 'system', 'content': bot_description}
-    ] + previous + [
+    ] + list(previous) + [
         {'role': 'user', 'content': '. '.join([step_details, user_content])}
     ]
     ai_response = client.chat.completions.create(
@@ -86,8 +88,11 @@ class SimpleAIBot:
                 'transitions': step.transitions
             } for step in self.scenario.steps.all()
         }
+        self.bot_description = '. '.join(
+            [self.chat_bot.description, self.scenario.description]
+        )
         self.step = None
-        self.previous = []
+        self.previous = deque(maxlen=4)
 
     def is_runnable(self):
         if 'start' not in self.steps or 'exit' not in self.steps:
@@ -97,7 +102,7 @@ class SimpleAIBot:
     def start(self):
         self.step = self.steps.get('start')
         ai_message, completion_tokens = get_ai_response(
-            self.chat_bot.description,
+            self.bot_description,
             self.step.get('message'),
             self.previous,
             'Привет'
@@ -117,7 +122,7 @@ class SimpleAIBot:
             )
         self.step = self.steps.get(next_step_name)
         ai_message, completion_tokens = get_ai_response(
-            self.chat_bot.description,
+            self.bot_description,
             self.step.get('message'),
             self.previous,
             user_content
@@ -130,9 +135,6 @@ class SimpleAIBot:
             response['next'] = '-'
             return response
         response['next'] = self.step.get('transitions').keys()
-        if len(self.previous) > 1:
-            self.previous.pop()
-            self.previous.pop()
         self.previous.append({'role': 'user', 'content': user_content})
         self.previous.append({'role': 'assistant', 'content': ai_message})
         return response

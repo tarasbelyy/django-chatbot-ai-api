@@ -32,7 +32,10 @@ def get_ai_response(bot_description, step_details, previous, user_content):
         max_completion_tokens=2000,
         temperature=1.0
     )
-    return ai_response.choices[0].message.content
+    return (
+        ai_response.choices[0].message.content,
+        ai_response.usage.completion_tokens
+    )
 
 
 def has_all_paths(steps):
@@ -93,15 +96,16 @@ class SimpleAIBot:
 
     def start(self):
         self.step = self.steps.get('start')
-        ai_response = get_ai_response(
+        ai_message, completion_tokens = get_ai_response(
             self.chat_bot.description,
             self.step.get('message'),
             self.previous,
             'Привет'
         )
         response = {
-            'message': ai_response,
-            'next': self.step.get('transitions').keys()
+            'message': ai_message,
+            'next': self.step.get('transitions').keys(),
+            'completion_tokens': completion_tokens
         }
         return response
 
@@ -112,27 +116,25 @@ class SimpleAIBot:
                 f'Options: {list(self.step.get('transitions').keys())}'
             )
         self.step = self.steps.get(next_step_name)
-        ai_response = get_ai_response(
+        ai_message, completion_tokens = get_ai_response(
             self.chat_bot.description,
             self.step.get('message'),
             self.previous,
             user_content
         )
-        if next_step_name == 'exit':
-            response = {
-                'message': ai_response,
-                'next': '-'
-            }
-            return response
         response = {
-            'message': ai_response,
-            'next': self.step.get('transitions').keys()
+            'message': ai_message,
+            'completion_tokens': completion_tokens
         }
+        if next_step_name == 'exit':
+            response['next'] = '-'
+            return response
+        response['next'] = self.step.get('transitions').keys()
         if len(self.previous) > 1:
             self.previous.pop()
             self.previous.pop()
         self.previous.append({'role': 'user', 'content': user_content})
-        self.previous.append({'role': 'assistant', 'content': ai_response})
+        self.previous.append({'role': 'assistant', 'content': ai_message})
         return response
 
 
@@ -164,6 +166,7 @@ def test_openai():
         max_tokens=100
     )
     print(ai_response.choices[0].message.content)
+    print(ai_response.usage.completion_tokens)
 
 
 if __name__ == '__main__':

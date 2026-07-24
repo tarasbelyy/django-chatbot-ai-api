@@ -34,10 +34,11 @@ def get_ai_response(bot_description, step_details, previous, user_content):
         max_completion_tokens=2000,
         temperature=1.0
     )
-    return (
-        ai_response.choices[0].message.content,
-        ai_response.usage.completion_tokens
-    )
+    ai_message = ai_response.choices[0].message.content
+    token_usage = dict()
+    token_usage['completion'] = ai_response.usage.completion_tokens
+    token_usage['prompt'] = ai_response.usage.prompt_tokens
+    return ai_message, token_usage
 
 
 def has_all_paths(steps):
@@ -101,7 +102,7 @@ class SimpleAIBot:
 
     def start(self):
         self.step = self.steps.get('start')
-        ai_message, completion_tokens = get_ai_response(
+        ai_message, token_usage = get_ai_response(
             self.bot_description,
             self.step.get('message'),
             self.previous,
@@ -110,7 +111,7 @@ class SimpleAIBot:
         response = {
             'message': ai_message,
             'next': self.step.get('transitions').keys(),
-            'completion_tokens': completion_tokens
+            'tokens': token_usage
         }
         return response
 
@@ -121,7 +122,7 @@ class SimpleAIBot:
                 f'Options: {list(self.step.get('transitions').keys())}'
             )
         self.step = self.steps.get(next_step_name)
-        ai_message, completion_tokens = get_ai_response(
+        ai_message, token_usage = get_ai_response(
             self.bot_description,
             self.step.get('message'),
             self.previous,
@@ -129,7 +130,7 @@ class SimpleAIBot:
         )
         response = {
             'message': ai_message,
-            'completion_tokens': completion_tokens
+            'tokens': token_usage
         }
         if next_step_name == 'exit':
             response['next'] = '-'
@@ -168,7 +169,8 @@ def test_openai():
         max_tokens=100
     )
     print(ai_response.choices[0].message.content)
-    print(ai_response.usage.completion_tokens)
+    print('completion tokens:', ai_response.usage.completion_tokens)
+    print('prompt tokens:',  ai_response.usage.prompt_tokens)
 
 
 if __name__ == '__main__':

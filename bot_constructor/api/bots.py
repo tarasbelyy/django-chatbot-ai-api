@@ -22,17 +22,17 @@ class BotNotExistsError(Exception):
     pass
 
 
-def get_ai_response(bot_description, step_details, previous, user_content):
+def get_ai_response(bot_description, user_step_payload, previous):
     messages_payload = [
         {'role': 'system', 'content': bot_description}
     ] + list(previous) + [
-        {'role': 'user', 'content': '. '.join([step_details, user_content])}
+        {'role': 'user', 'content': user_step_payload}
     ]
     ai_response = client.chat.completions.create(
         model='openai/gpt-5.4-nano',
         messages=messages_payload,
         max_completion_tokens=2000,
-        temperature=1.0
+        temperature=0.7
     )
     ai_message = ai_response.choices[0].message.content
     token_usage = dict()
@@ -105,8 +105,7 @@ class SimpleAIBot:
         ai_message, token_usage = get_ai_response(
             self.bot_description,
             self.step.get('message'),
-            self.previous,
-            'Привет'
+            self.previous
         )
         response = {
             'message': ai_message,
@@ -122,11 +121,11 @@ class SimpleAIBot:
                 f'Options: {list(self.step.get('transitions').keys())}'
             )
         self.step = self.steps.get(next_step_name)
+        user_step_payload = '. '.join([self.step.get('message'), user_content])
         ai_message, token_usage = get_ai_response(
             self.bot_description,
-            self.step.get('message'),
-            self.previous,
-            user_content
+            user_step_payload,
+            self.previous
         )
         response = {
             'message': ai_message,

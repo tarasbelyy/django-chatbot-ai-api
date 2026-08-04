@@ -34,8 +34,7 @@ services:
       volumes:
         - ./nginx/conf.d:/etc/nginx/conf.d:ro
         - static-volume:/app/static
-        - ./nginx/certbot/conf:/etc/letsencrypt:ro
-        - ./nginx/certbot/www:/var/www/certbot:ro
+        - /etc/letsencrypt:/etc/letsencrypt:ro
       depends_on:
         - app
       networks:
@@ -47,6 +46,8 @@ volumes:
     name: app-postgres
   static-volume:
     name: static-volume
+  /etc/letsencrypt:
+    name: /etc/letsencrypt
 
 networks:
   backend:

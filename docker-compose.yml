@@ -46,8 +46,6 @@ volumes:
     name: app-postgres
   static-volume:
     name: static-volume
-  /etc/letsencrypt:
-    name: /etc/letsencrypt
 
 networks:
   backend:

@@ -24,9 +24,12 @@ ALLOWED_HOSTS = [
     '151.243.217.107',
     'app',
     'scaichatbot.3utilities.com',
-    'www.scaichatbot.3utilities.com'
 ]
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 # Application definition
 

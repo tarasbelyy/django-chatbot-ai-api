@@ -35,6 +35,7 @@ services:
         - ./nginx/conf.d:/etc/nginx/conf.d:ro
         - static-volume:/app/static
         - /etc/letsencrypt:/etc/letsencrypt:ro
+        - /var/www/certbot:/var/www/certbot:ro
       depends_on:
         - app
       networks:

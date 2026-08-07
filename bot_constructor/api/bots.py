@@ -29,7 +29,7 @@ def get_ai_response(bot_description, user_step_payload, previous):
         {'role': 'user', 'content': user_step_payload}
     ]
     ai_response = client.chat.completions.create(
-        model='openai/gpt-5.4-nano',
+        model='openai/gpt-5.6-luna',
         messages=messages_payload,
         max_completion_tokens=2000,
         temperature=0.7
@@ -160,12 +160,12 @@ def run_bots(user, chat_bot, move, user_content=None):
 
 def test_openai():
     ai_response = client.chat.completions.create(
-        model='openai/gpt-4.1-nano',
+        model='openai/gpt-5.6-luna',
         messages=[
             {'role': 'system', 'content': 'Nice assistant'},
             {'role': 'user', 'content': 'Say hay. I am Taras Belyy'}
         ],
-        max_tokens=100
+        max_completion_tokens=100
     )
     print(ai_response.choices[0].message.content)
     print('completion tokens:', ai_response.usage.completion_tokens)

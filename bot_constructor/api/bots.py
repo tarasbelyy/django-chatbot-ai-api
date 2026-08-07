@@ -31,8 +31,7 @@ def get_ai_response(bot_description, user_step_payload, previous):
     ai_response = client.chat.completions.create(
         model='openai/gpt-5.6-luna',
         messages=messages_payload,
-        max_completion_tokens=2000,
-        temperature=0.7
+        max_completion_tokens=2000
     )
     ai_message = ai_response.choices[0].message.content
     token_usage = dict()

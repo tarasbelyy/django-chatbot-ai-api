@@ -1,6 +1,0 @@
-Django==6.0.6
-djangorestframework
-psycopg2-binary
-openai
-dotenv
-gunicorn

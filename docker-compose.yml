@@ -36,6 +36,7 @@ services:
         - static-volume:/app/static
         - /etc/letsencrypt:/etc/letsencrypt:ro
         - /var/www/certbot:/var/www/certbot:ro
+        - /var/www/html:/var/www/html:ro
       depends_on:
         - app
       networks:

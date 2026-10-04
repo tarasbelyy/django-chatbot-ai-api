@@ -128,7 +128,7 @@ async def bot_run_view(request, bot_id):
             return JsonResponse({'error': 'Active bot not found'}, status=404)
         except bots.MoveNotValidError as e:
             return JsonResponse({'error': f'Incorrect move. {e}'}, status=400)
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(data, status=200)
     return JsonResponse({'error': 'Request method not supported'}, status=405)
 
 

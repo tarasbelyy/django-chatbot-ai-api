@@ -1,14 +1,9 @@
+import json
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
-from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.views import APIView
-from rest_framework.exceptions import (
-    ValidationError,
-    PermissionDenied,
-    NotFound
-)
 from rest_framework.permissions import (
     BasePermission,
     SAFE_METHODS
@@ -100,49 +95,45 @@ class StepModelViewSet(ModelViewSet):
         serializer.save(author=self.request.user, scenario=scenario)
 
 
-class BotRunView(APIView):
-    throttle_classes = (ScopedRateThrottle,)
-    throttle_scope = 'ai_endpoint'
-    permission_classes = []
-    authentication_classes = []
-
-    async def get(self, request, bot_id):
+async def bot_run_view(request, bot_id):
+    if request.method == 'GET':
         user = await request.auser()
         if not user.is_authenticated:
-            raise PermissionDenied
+            return JsonResponse({'error': 'User not authenticated'}, status=401)
         try:
             chat_bot = await ChatBot.objects.select_related(
                 'scenario'
             ).prefetch_related('scenario__steps').aget(pk=bot_id)
         except ChatBot.DoesNotExist:
-            raise NotFound('ChatBot not found')
+            return JsonResponse({'error': 'Bot not found'}, status=404)
         try:
             data = await bots.run_bots(user, chat_bot, 'start')
         except bots.BotNotRunnableError:
-            raise ValidationError('Bot is not runnable')
-        return Response(data, status=status.HTTP_200_OK)
-
-    async def post(self, request, bot_id):
+            return JsonResponse({'error': 'Bot not runnable'}, status=422)
+        return JsonResponse(data, status=200)
+    elif request.method == 'POST':
         user = await request.auser()
         if not user.is_authenticated:
-            raise PermissionDenied
+            return JsonResponse({'error': 'User not authenticated'}, status=401)
         try:
             chat_bot = await ChatBot.objects.select_related(
                 'scenario'
             ).prefetch_related('scenario__steps').aget(pk=bot_id)
         except ChatBot.DoesNotExist:
-            raise NotFound('ChatBot not found')
-        move = request.data.get('next')
+            return JsonResponse({'error': 'Bot not found'}, status=404)
+        request_data = json.loads(request.body)
+        move = request_data.get('next')
         if move is None:
-            raise ValidationError('Field "next" is required')
-        user_content = request.data.get('message')
+            return JsonResponse({'error': 'Field "next" is required'}, status=422)
+        user_content = request_data.get('message')
         try:
             data = await bots.run_bots(user, chat_bot, move, user_content)
         except bots.BotNotExistsError:
-            raise NotFound('Active chatbot not found')
+            return JsonResponse({'error': 'Active bot not found'}, status=404)
         except bots.MoveNotValidError as e:
-            raise ValidationError(f'Incorrect move. {e}')
+            return JsonResponse({'error': f'Incorrect move. {e}'}, status=400)
         return Response(data, status=status.HTTP_200_OK)
+    return JsonResponse({'error': 'Request method not supported'}, status=405)
 
 
 @api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])

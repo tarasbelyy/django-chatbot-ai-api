@@ -1,9 +1,10 @@
+import asyncio
 from collections import deque
 
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 
-client = OpenAI(
+client = AsyncOpenAI(
     base_url='https://openai.api.proxyapi.ru/v1'
 )
 
@@ -22,13 +23,13 @@ class BotNotExistsError(Exception):
     pass
 
 
-def get_ai_response(bot_description, user_step_payload, previous):
+async def get_ai_response(bot_description, user_step_payload, previous):
     messages_payload = [
         {'role': 'system', 'content': bot_description}
     ] + list(previous) + [
         {'role': 'user', 'content': user_step_payload}
     ]
-    ai_response = client.chat.completions.create(
+    ai_response = await client.chat.completions.create(
         model='openai/gpt-5.6-luna',
         messages=messages_payload,
         max_completion_tokens=2000
@@ -99,9 +100,9 @@ class SimpleAIBot:
             return False
         return has_all_paths(self.steps)
 
-    def start(self):
+    async def start(self):
         self.step = self.steps.get('start')
-        ai_message, token_usage = get_ai_response(
+        ai_message, token_usage = await get_ai_response(
             self.bot_description,
             self.step.get('message'),
             self.previous
@@ -113,7 +114,7 @@ class SimpleAIBot:
         }
         return response
 
-    def get_response(self, move, user_content=None):
+    async def get_response(self, move, user_content=None):
         next_step_name = self.step.get('transitions').get(move)
         if next_step_name is None:
             raise MoveNotValidError(
@@ -121,7 +122,7 @@ class SimpleAIBot:
             )
         self.step = self.steps.get(next_step_name)
         user_step_payload = '. '.join([self.step.get('message'), user_content])
-        ai_message, token_usage = get_ai_response(
+        ai_message, token_usage = await get_ai_response(
             self.bot_description,
             user_step_payload,
             self.previous
@@ -139,26 +140,26 @@ class SimpleAIBot:
         return response
 
 
-def run_bots(user, chat_bot, move, user_content=None):
+async def run_bots(user, chat_bot, move, user_content=None):
     if move == 'start':
         bot = SimpleAIBot(user, chat_bot)
         if not bot.is_runnable():
             raise BotNotRunnableError
         bots[(user, chat_bot)] = bot
-        response = bot.start()
+        response = await bot.start()
         return response
     else:
         bot = bots.get((user, chat_bot))
         if bot is None:
             raise BotNotExistsError
-        response = bot.get_response(move, user_content)
+        response = await bot.get_response(move, user_content)
         if response.get('next') == '-':
             bots.pop((user, chat_bot))
         return response
 
 
-def test_openai():
-    ai_response = client.chat.completions.create(
+async def test_openai():
+    ai_response = await client.chat.completions.create(
         model='openai/gpt-5.6-luna',
         messages=[
             {'role': 'system', 'content': 'Nice assistant'},
@@ -171,5 +172,9 @@ def test_openai():
     print('prompt tokens:',  ai_response.usage.prompt_tokens)
 
 
+async def main():
+    await test_openai()
+
+
 if __name__ == '__main__':
-    test_openai()
+    asyncio.run(main())

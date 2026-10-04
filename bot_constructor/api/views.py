@@ -104,24 +104,38 @@ class BotRunView(APIView):
     throttle_classes = (ScopedRateThrottle,)
     throttle_scope = 'ai_endpoint'
 
-    def get(self, request, bot_id):
-        if not request.user.is_authenticated:
+    async def get(self, request, bot_id):
+        user = await request.auser()
+        if not user.is_authenticated:
             raise PermissionDenied
-        chat_bot = get_object_or_404(ChatBot, pk=bot_id)
         try:
-            data = bots.run_bots(request.user, chat_bot, 'start')
+            chat_bot = await ChatBot.objects.select_related(
+                'scenario'
+            ).prefetch_related('scenario__steps').aget(pk=bot_id)
+        except ChatBot.DoesNotExist:
+            raise NotFound('ChatBot not found')
+        try:
+            data = await bots.run_bots(user, chat_bot, 'start')
         except bots.BotNotRunnableError:
             raise ValidationError('Bot is not runnable')
         return Response(data, status=status.HTTP_200_OK)
 
-    def post(self, request, bot_id):
-        chat_bot = get_object_or_404(ChatBot, pk=bot_id)
+    async def post(self, request, bot_id):
+        user = await request.auser()
+        if not user.is_authenticated:
+            raise PermissionDenied
+        try:
+            chat_bot = await ChatBot.objects.select_related(
+                'scenario'
+            ).prefetch_related('scenario__steps').aget(pk=bot_id)
+        except ChatBot.DoesNotExist:
+            raise NotFound('ChatBot not found')
         move = request.data.get('next')
         if move is None:
             raise ValidationError('Field "next" is required')
         user_content = request.data.get('message')
         try:
-            data = bots.run_bots(request.user, chat_bot, move, user_content)
+            data = await bots.run_bots(user, chat_bot, move, user_content)
         except bots.BotNotExistsError:
             raise NotFound('Active chatbot not found')
         except bots.MoveNotValidError as e:

@@ -107,7 +107,7 @@ async def bot_run_view(request, bot_id):
         try:
             data = await bots.run_bots(user, chat_bot, 'start')
         except bots.BotNotRunnableError:
-            return JsonResponse({'error': 'Bot not runnable'}, status=422)
+            return JsonResponse({'error': 'Bot not runnable'}, status=400)
         return JsonResponse(data, status=200)
     elif request.method == 'POST':
         user = await request.auser()
@@ -120,7 +120,7 @@ async def bot_run_view(request, bot_id):
         request_data = json.loads(request.body)
         move = request_data.get('next')
         if move is None:
-            return JsonResponse({'error': 'Field "next" is required'}, status=422)
+            return JsonResponse({'error': 'Field "next" is required'}, status=400)
         user_content = request_data.get('message')
         try:
             data = await bots.run_bots(user, chat_bot, move, user_content)

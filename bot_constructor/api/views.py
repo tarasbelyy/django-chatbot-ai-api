@@ -103,6 +103,8 @@ class StepModelViewSet(ModelViewSet):
 class BotRunView(APIView):
     throttle_classes = (ScopedRateThrottle,)
     throttle_scope = 'ai_endpoint'
+    permission_classes = []
+    authentication_classes = []
 
     async def get(self, request, bot_id):
         user = await request.auser()

@@ -98,8 +98,6 @@ class StepModelViewSet(ModelViewSet):
 async def bot_run_view(request, bot_id):
     if request.method == 'GET':
         user = await request.auser()
-        if not user.is_authenticated:
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
         try:
             chat_bot = await ChatBot.objects.select_related(
                 'scenario'
@@ -113,8 +111,6 @@ async def bot_run_view(request, bot_id):
         return JsonResponse(data, status=200)
     elif request.method == 'POST':
         user = await request.auser()
-        if not user.is_authenticated:
-            return JsonResponse({'error': 'User not authenticated'}, status=401)
         try:
             chat_bot = await ChatBot.objects.select_related(
                 'scenario'

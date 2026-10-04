@@ -109,7 +109,7 @@ class SimpleAIBot:
         )
         response = {
             'message': ai_message,
-            'next': self.step.get('transitions').keys(),
+            'next': list(self.step.get('transitions').keys()),
             'tokens': token_usage
         }
         return response
@@ -134,7 +134,7 @@ class SimpleAIBot:
         if next_step_name == 'exit':
             response['next'] = '-'
             return response
-        response['next'] = self.step.get('transitions').keys()
+        response['next'] = list(self.step.get('transitions').keys())
         self.previous.append({'role': 'user', 'content': user_content})
         self.previous.append({'role': 'assistant', 'content': ai_message})
         return response

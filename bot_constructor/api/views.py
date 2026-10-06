@@ -1,6 +1,7 @@
 import json
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -96,8 +97,18 @@ class StepModelViewSet(ModelViewSet):
 
 
 async def bot_run_view(request, bot_id):
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return JsonResponse({'error': 'Auth data not provided'}, status=401)
+    token_data = auth_header.split(' ')
+    if len(token_data) != 2 or token_data[0] != 'Token':
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+    try:
+        token = await Token.objects.select_related('user').aget(key=token_data[1])
+    except Token.DoesNotExist:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+    user = token.user
     if request.method == 'GET':
-        user = await request.auser()
         try:
             chat_bot = await ChatBot.objects.select_related(
                 'scenario'
@@ -110,7 +121,6 @@ async def bot_run_view(request, bot_id):
             return JsonResponse({'error': 'Bot not runnable'}, status=400)
         return JsonResponse(data, status=200)
     elif request.method == 'POST':
-        user = await request.auser()
         try:
             chat_bot = await ChatBot.objects.select_related(
                 'scenario'
